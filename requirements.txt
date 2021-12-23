@@ -1,0 +1,12 @@
+flask==1.1.2
+pip
+Pillow
+numpy
+pandas
+Flask-SQLAlchemy
+requests
+flask_migrate
+openpyxl
+geopy
+jsonify
+flask_marshmallow
