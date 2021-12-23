@@ -19,6 +19,7 @@ flask db upgrade
 #Run the code
 
 flask run
+
 ----------------- Example of usage -----------------
 
 (POST) http://127.0.0.1:5000/top_plant
