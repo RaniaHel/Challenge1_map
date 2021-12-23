@@ -1,9 +1,6 @@
-import os
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from app import app
-
-PROJECT_ROOT = os.path.dirname(os.path.realpath(__file__))
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/challenge1.sqlite3'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False

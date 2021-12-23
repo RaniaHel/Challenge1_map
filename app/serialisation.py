@@ -1,5 +1,4 @@
-from app import app
-from .modules import db, States
+from .modules import db, States, app
 from flask_marshmallow import Marshmallow
 
 ma = Marshmallow(app)

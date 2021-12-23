@@ -1,8 +1,10 @@
-from .utils import *
-from flask import request
 import json
-import pandas as pd
-from .serialisation import *
+from flask import request
+from app import app
+from .modules import db, States
+from .serialisation import State_schema
+from .utils import pd, get_coordinates, treating_st_data, treating_pnlt_data
+
 
 content_type = {'Content-Type': 'application/json'}
 
@@ -12,23 +14,25 @@ def homepage():
 
 @app.route("/top_plant", methods=['POST'])
 def top_plant():
-    result = dict()
     content = request.get_json()
+    result = dict()
+    #Read the excel file
     xls = pd.ExcelFile('public/egrid2019_data.xlsx')
-    plnt = pd.read_excel(xls, 'PLNT19')
-    data = plnt[["Plant state abbreviation", "Plant name", "Plant annual net generation (MWh)"]]
-    data = data[data['Plant annual net generation (MWh)'].notna()].drop(labels=0, axis=0)
-    df = data.sort_values(by='Plant annual net generation (MWh)', ascending=False,ignore_index=True).head(content["N"])
-    df['Plant name state']= df['Plant name'] + ' ' +df['Plant state abbreviation']
-    plant_list = df['Plant name state'].tolist()
-    for plant in plant_list:
+    #treating PNLT Data
+    pnlt_data = treating_pnlt_data(content, xls)
+    # Get the top on N plants and their coordinates
+    plants = pnlt_data['Plant name state'].tolist()
+    for plant in plants:
         result.update({plant: get_coordinates(plant)})
     return result
 
 @app.route("/states", methods=['GET'])
 def states():
+    # Read the excel file
     xls = pd.ExcelFile('public/egrid2019_data.xlsx')
-    st_data=treating_data(xls)
+    # treating ST Data
+    st_data=treating_st_data(xls)
+    #Save the States's data to the database in State module
     state_json = json.loads(st_data.to_json(orient="records"))
     for data in state_json:
         newstate = States(state=data['State abbreviation'], annual_net=data['State annual net generation (MWh)'], annual_net_percentage=data['State annual net_percentage %'], lat=data['Coordinates'][0], lon=data['Coordinates'][1])
@@ -38,9 +42,9 @@ def states():
     return json.dumps(state_json), 200, content_type
 
 
-
 @app.route("/filter_state", methods=['POST'])
 def filter_state():
+    #Filter according to the state and display it in Json format using the serializer State_schema()
     content = request.get_json()
     stateobj = States.query.filter_by(state=content["state"]).first()
     stateschema = State_schema()
