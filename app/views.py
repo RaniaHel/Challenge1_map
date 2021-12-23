@@ -38,6 +38,7 @@ def states():
     return json.dumps(state_json), 200, content_type
 
 
+
 @app.route("/filter_state", methods=['POST'])
 def filter_state():
     content = request.get_json()
