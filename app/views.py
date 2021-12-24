@@ -1,4 +1,5 @@
 import json
+import requests
 from flask import request
 from app import app
 from .modules import db, States
@@ -17,21 +18,37 @@ def top_plant():
     content = request.get_json()
     result = dict()
     #Read the excel file
-    xls = pd.ExcelFile('public/egrid2019_data.xlsx')
+    error_list = []
+    xls = None
+    try:
+        xls = pd.ExcelFile('public/egrid2019_data.xlsx')
+    except Exception as err:
+        error_list.append(err)
     #treating PNLT Data
-    pnlt_data = treating_pnlt_data(content, xls)
+    pnlt_data, errors = treating_pnlt_data(content, xls)
+    for error in errors:
+        error_list.append(error)
     # Get the top on N plants and their coordinates
     plants = pnlt_data['Plant name state'].tolist()
     for plant in plants:
         result.update({plant: get_coordinates(plant)})
+    if len(error_list)>0:
+        return "500 error", 500
     return result
 
 @app.route("/states", methods=['GET'])
 def states():
     # Read the excel file
-    xls = pd.ExcelFile('public/egrid2019_data.xlsx')
+    error_list = []
+    xls = None
+    try:
+        xls = pd.ExcelFile('public/egrid2019_data.xlsx')
+    except Exception as err:
+        error_list.append(err)
     # treating ST Data
-    st_data=treating_st_data(xls)
+    st_data, errors =treating_st_data(xls)
+    for error in errors:
+        error_list.append(error)
     #Save the States's data to the database in State module
     state_json = json.loads(st_data.to_json(orient="records"))
     for data in state_json:
@@ -39,6 +56,8 @@ def states():
         if States.query.filter_by(state=data['State abbreviation']).first() is None:
             db.session.add(newstate)
     db.session.commit()
+    if len(error_list)>0:
+        return "500 error", 500
     return json.dumps(state_json), 200, content_type
 
 
