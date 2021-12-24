@@ -22,6 +22,8 @@ flask run
 
 ----------------- Example of usage -----------------
 
+Post request (json body format):
+
 (POST) http://127.0.0.1:5000/top_plant
 
 {
@@ -30,9 +32,13 @@ flask run
 
 ----------------------------------------------------
 
+GET request:
+
 (GET) http://127.0.0.1:5000/states
 
 ----------------------------------------------------
+
+Post request (json body format):
 
 (POST) http://127.0.0.1:5000/filter_state
 
